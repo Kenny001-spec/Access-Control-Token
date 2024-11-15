@@ -6,8 +6,8 @@ async function main() {
 
   console.log("AccessControlledToken deployed to:", accessControlledToken.target);
 
-  const addr = "0x70997970C51812dc3A010C7d01b50e0d17dc79C8"
-  const receiver = "0x976EA74026E726554dB657fA54763abd0C3a0aa9"
+  const addr = "0xD1f4c4AFFfbc6984214d37bef1e3153b911e5166"
+  const receiver = "0x369D745a39705f35a35051a7F765553727Beb3cA"
 
   const newAdmin = await accessControlledToken.addAdmin(addr);
   await newAdmin.wait();
