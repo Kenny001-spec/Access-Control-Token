@@ -10,23 +10,22 @@ describe("AccessControl", function () {
     let addrs;
 
     beforeEach(async function () {
-        // Get test accounts
+     
         [owner, addr1, addr2, ...addrs] = await ethers.getSigners();
 
-        // Deploy a new AccessControl contract before each test
         AccessControl = await ethers.getContractFactory("AccessControl");
         accessControl = await AccessControl.deploy();
     });
 
     describe("Deployment", function () {
         it("Should set the deployer as admin", async function () {
-            // Try to call admin-only function to verify
+            
             await expect(accessControl.connect(owner).setAdmin(addr1.address))
                 .to.not.be.revertedWith("Not admin");
         });
 
         it("Should authorize the deployer", async function () {
-            // Try to call authorized-only function to verify
+    
             await expect(accessControl.connect(owner).authorize(addr1.address))
                 .to.not.be.revertedWith("Not authorized");
         });
@@ -57,14 +56,13 @@ describe("AccessControl", function () {
         });
 
         it("Should transfer admin privileges correctly", async function () {
-            // Transfer admin to addr1
+     
             await accessControl.connect(owner).setAdmin(addr1.address);
             
-            // Original admin should no longer have access
+           
             await expect(accessControl.connect(owner).setAdmin(addr2.address))
                 .to.be.revertedWith("Not admin");
-            
-            // New admin should have access
+         
             await expect(accessControl.connect(addr1).setAdmin(addr2.address))
                 .to.not.be.revertedWith("Not admin");
         });
@@ -78,10 +76,10 @@ describe("AccessControl", function () {
         });
 
         it("Should allow admin to deauthorize accounts", async function () {
-            // First authorize
+        
             await accessControl.connect(owner).authorize(addr1.address);
             
-            // Then deauthorize
+
             await expect(accessControl.connect(owner).deauthorize(addr1.address))
                 .to.emit(accessControl, "AuthorizationChanged")
                 .withArgs(addr1.address, false);
@@ -98,16 +96,16 @@ describe("AccessControl", function () {
         });
 
         it("Should maintain authorization after admin change", async function () {
-            // Authorize addr2
+   
             await accessControl.connect(owner).authorize(addr2.address);
             
-            // Change admin to addr1
+          
             await accessControl.connect(owner).setAdmin(addr1.address);
             
-            // addr2 should still be authorized
+           
             await expect(accessControl.connect(addr2).authorize(addr1.address))
                 .to.be.revertedWith("Not admin");
-            // but should still have authorization status
+      
             await expect(accessControl.connect(owner).deauthorize(addr2.address))
                 .to.be.revertedWith("Not admin");
         });
@@ -115,14 +113,13 @@ describe("AccessControl", function () {
 
     describe("Complex Scenarios", function () {
         it("Should handle multiple authorization changes", async function () {
-            // Authorize multiple accounts
+      
             await accessControl.connect(owner).authorize(addr1.address);
             await accessControl.connect(owner).authorize(addr2.address);
             
-            // Deauthorize one account
+           
             await accessControl.connect(owner).deauthorize(addr1.address);
-            
-            // Verify states
+        
             await expect(accessControl.connect(addr1).authorize(addrs[0].address))
                 .to.be.revertedWith("Not admin");
             await expect(accessControl.connect(addr2).authorize(addrs[0].address))
@@ -130,16 +127,16 @@ describe("AccessControl", function () {
         });
 
         it("Should handle admin transfer chain", async function () {
-            // Create chain of admin transfers
+         
             await accessControl.connect(owner).setAdmin(addr1.address);
             await accessControl.connect(addr1).setAdmin(addr2.address);
             await accessControl.connect(addr2).setAdmin(addrs[0].address);
             
-            // Verify final state
+       
             await expect(accessControl.connect(addrs[0]).authorize(addr1.address))
                 .to.not.be.revertedWith("Not admin");
             
-            // Previous admins should have no access
+         
             await expect(accessControl.connect(owner).authorize(addr1.address))
                 .to.be.revertedWith("Not admin");
             await expect(accessControl.connect(addr1).authorize(addr2.address))
